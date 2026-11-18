@@ -1045,6 +1045,18 @@ html,body{overflow-x:clip}
 /* Reviews: full-bleed strip, cards run to both screen edges */
 #reviews{container-type:inline-size}
 #reviews .rev-grid{width:100cqw;margin-left:calc((100% - 100cqw)/2);padding-left:calc((100cqw - 100%)/2);padding-right:calc((100cqw - 100%)/2);-webkit-mask-image:none;mask-image:none}
+
+/* footer: line up Clinic hours with the column headings, and scale with wide screens */
+@media (min-width:1101px){.foot-main .hours{margin-top:-16px}}
+@media (min-width:1500px){
+  footer .wrap,footer .foot-main{width:min(77.5rem,100% - 64px)}
+  .foot-main .hours{margin-top:-1rem;padding:1rem 1.25rem;border-radius:1.125rem}
+  .foot-brand .logo svg{width:2.75rem;height:2.75rem}
+  .socials{gap:.625rem;margin-top:1.25rem}
+  .socials a{width:2.625rem;height:2.625rem}
+  .socials svg,.foot-list svg{width:1.125rem;height:1.125rem}
+  .foot-bottom{padding:1.375rem 0}
+}
 </style>
 </head>
 <body>
