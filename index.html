@@ -827,7 +827,7 @@ footer .hours{grid-template-columns:1fr;gap:2px;margin-top:0}
 textarea{resize:none!important}
 
 /* ───────── Mobile fixes ───────── */
-html,body{overflow-x:hidden}
+html,body{overflow-x:clip}
 .foot-main>*{min-width:0}
 @media (max-width:560px){
   .foot-main{grid-template-columns:minmax(0,1fr)}
@@ -995,6 +995,7 @@ html,body{overflow-x:hidden}
   .hours dd{font-size:.88rem;text-align:left}
   .hours .hr-title{font-size:.72rem;margin-bottom:4px}
 }
+@media (max-width:900px) and (pointer:fine){body{cursor:grab}a,button,input,select,textarea,summary,label{cursor:pointer}input,textarea{cursor:text}}
 </style>
 </head>
 <body>
@@ -1881,17 +1882,44 @@ html,body{overflow-x:hidden}
   };
   window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
   el.addEventListener('dragstart', e => e.preventDefault());
-  el.addEventListener('wheel', e => {
-    if (!active() || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if ((e.deltaY > 0 && el.scrollLeft >= max - 1) || (e.deltaY < 0 && el.scrollLeft <= 0)) return;
-    e.preventDefault(); el.scrollLeft += e.deltaY;
-  }, { passive: false });
 })();
 
 document.getElementById('faqMore')?.addEventListener('click', e => {
   const list = e.currentTarget.closest('.faq-list'); list.classList.add('all'); e.currentTarget.setAttribute('aria-expanded','true');
 });
+
+/* mobile view: drag the page with the mouse (like touch) */
+(() => {
+  const mq = matchMedia('(max-width:900px)');
+  const skip = 'input,select,textarea,button,iframe,label,summary,.team-grid,.car-track,.rev-grid,#carTrack,#revTrack,.capsule-nav,nav';
+  let on = false, sy = 0, sx = 0, lastY = 0, lastT = 0, vel = 0, dragged = false, raf = 0;
+  const root = document.documentElement;
+  addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0 || !mq.matches) return;
+    if (e.target.closest(skip)) return;
+    cancelAnimationFrame(raf);
+    on = true; dragged = false; sy = lastY = e.clientY; sx = e.clientX; lastT = performance.now(); vel = 0;
+  });
+  addEventListener('pointermove', e => {
+    if (!on) return;
+    const dy = e.clientY - lastY;
+    if (!dragged && Math.abs(e.clientY - sy) < 6) return;
+    if (!dragged) { dragged = true; document.body.style.userSelect = 'none'; root.style.scrollBehavior = 'auto'; root.style.cursor = 'grabbing'; getSelection()?.removeAllRanges(); }
+    const now = performance.now(); vel = dy / Math.max(1, now - lastT) * 16; lastT = now; lastY = e.clientY;
+    scrollBy(0, -dy);
+  });
+  const end = () => {
+    if (!on) return; on = false;
+    document.body.style.userSelect = ''; root.style.cursor = '';
+    if (!dragged) { root.style.scrollBehavior = ''; return; }
+    let v = -vel;
+    const step = () => { if (Math.abs(v) < .3) { root.style.scrollBehavior = ''; return; } scrollBy(0, v); v *= .94; raf = requestAnimationFrame(step); };
+    step();
+  };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+  addEventListener('click', e => { if (dragged) { e.preventDefault(); e.stopPropagation(); dragged = false; } }, true);
+  addEventListener('dragstart', e => { if (mq.matches) e.preventDefault(); });
+})();
 </script>
 </body>
 </html>
