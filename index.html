@@ -1830,6 +1830,9 @@ html,body{overflow-x:clip}
       if (!paused && !drag && !reduce.matches) { acc += dt * 0.04; const s = Math.floor(acc); if (s) { acc -= s; rt.scrollLeft += s; } }
       wrap(); requestAnimationFrame(tick);
     }
+    // wide screens: keep adding copies so the strip can never run out of cards (otherwise it hits the end and stops)
+    const fill = () => { let g = 0; while (rt.scrollWidth < half() * 2 + rt.clientWidth + 40 && g++ < 8) orig.forEach(c => { const k = c.cloneNode(true); k.setAttribute('aria-hidden', 'true'); rt.appendChild(k); }); };
+    fill(); addEventListener('resize', fill); addEventListener('load', fill);
     rt.scrollLeft = 1;
     requestAnimationFrame(tick);
     rt.addEventListener('touchstart', () => paused = true, { passive: true });
@@ -1850,6 +1853,8 @@ html,body{overflow-x:clip}
     const gap = 20;
     const stepPx = () => track.querySelector('.case').getBoundingClientRect().width + gap;
     const period = () => stepPx() * orig.length;
+    const fillT = () => { let g = 0; while (track.scrollWidth < period() * 1.5 + track.clientWidth + 40 && g++ < 8) orig.forEach(c => { const k = c.cloneNode(true); k.setAttribute('aria-hidden', 'true'); track.appendChild(k); }); };
+    fillT(); addEventListener('resize', fillT); addEventListener('load', fillT);
     // start on the middle copy so you can scroll either way
     requestAnimationFrame(() => { track.style.scrollBehavior = 'auto'; track.scrollLeft = period(); });
     const normalise = () => {
